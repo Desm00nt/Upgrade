@@ -1,0 +1,69 @@
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'idea'
+    id 'net.minecraftforge.gradle' version '6.0.36'
+}
+
+group = 'io.github.desm00nt.kustik'
+version = mod_version
+base.archivesName = "kustik-${minecraft_version}"
+evaluationDependsOn(':core')
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: 'official', version: minecraft_version
+    copyIdeResources = true
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'info'
+            mods {
+                kustik {
+                    source sourceSets.main
+                    source project(':core').sourceSets.main
+                }
+            }
+        }
+        client {}
+        server { args '--nogui' }
+    }
+}
+
+repositories { mavenCentral() }
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    implementation project(':core')
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    filteringCharset = 'UTF-8'
+    inputs.property 'version', project.version
+    filesMatching('META-INF/mods.toml') { expand version: project.version }
+}
+
+tasks.named('jar', Jar).configure {
+    // Core is bundled as classes, not as a second mod or a shaded Gson copy.
+    from project(':core').sourceSets.main.output
+    from('LICENSE') { rename { 'LICENSE-kustik' } }
+    manifest {
+        attributes 'Implementation-Title': 'Kustik',
+                'Implementation-Version': project.version,
+                'Implementation-Vendor': 'Desm00nt'
+    }
+    finalizedBy 'reobfJar'
+}
+
+tasks.named('check').configure { dependsOn ':core:test' }
+test { useJUnitPlatform() }
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 17
+}
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}

@@ -1,0 +1,17 @@
+.gradle/
+**/build/
+run/
+run-data/
+.idea/
+.vscode/
+*.iml
+*.log
+out/
+# Credentials and local Minecraft data must never be committed.
+.env
+.env.*
+!.env.example
+config/
+**/kustik-common.toml
+world/
+.local/

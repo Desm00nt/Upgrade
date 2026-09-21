@@ -1,0 +1,2 @@
+// Allows ./gradlew -p core test without resolving Minecraft / Forge.
+rootProject.name = 'kustik-core'
