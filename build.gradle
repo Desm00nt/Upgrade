@@ -60,6 +60,38 @@ tasks.named('jar', Jar).configure {
     finalizedBy 'reobfJar'
 }
 
+// Validate the actual installable JAR after reobfuscation, not only processResources output.
+tasks.register('verifyModJar') {
+    dependsOn 'reobfJar'
+    doLast {
+        def modJar = tasks.named('jar', Jar).get().archiveFile.get().asFile
+        new java.util.zip.ZipFile(modJar).withCloseable { archive ->
+            ['META-INF/mods.toml', 'kustik/bush-system.txt',
+             'io/github/desm00nt/kustik/KustikMod.class',
+             'io/github/desm00nt/kustik/core/ApiKeyManager.class'].each { path ->
+                if (archive.getEntry(path) == null) {
+                    throw new GradleException("Missing mod content: ${path}")
+                }
+            }
+            def descriptor = archive.getInputStream(archive.getEntry('META-INF/mods.toml'))
+                    .withCloseable { it.getText('UTF-8') }
+            def forgeDependency = descriptor.split(/\[\[dependencies\.kustik\]\]/)
+                    .find { it.contains('modId="forge"') }
+            if (!forgeDependency?.contains("versionRange=\"[${project.forge_version},48)\"")
+                    || !descriptor.contains("version=\"${project.version}\"") || descriptor.contains('${')) {
+                throw new GradleException('Packaged mod version or Forge requirement does not match the build')
+            }
+        }
+        def checksum = java.security.MessageDigest.getInstance('SHA-256').digest(modJar.bytes).encodeHex().toString()
+        logger.lifecycle("Verified ${modJar.name}: Forge [${project.forge_version},48); SHA-256 ${checksum}")
+        if (System.getenv('GITHUB_ACTIONS') == 'true') {
+            // A public CI notice exposes only the artifact identity, never any runtime configuration or keys.
+            println "::notice title=Kustik JAR verified::${modJar.name}; Forge [${project.forge_version},48); SHA-256 ${checksum}"
+        }
+    }
+}
+
+tasks.named('build').configure { dependsOn 'verifyModJar' }
 tasks.named('check').configure { dependsOn ':core:test' }
 test { useJUnitPlatform() }
 tasks.withType(JavaCompile).configureEach {
