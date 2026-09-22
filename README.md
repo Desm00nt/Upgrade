@@ -30,7 +30,11 @@
 
 ### 1. Получи JAR
 
-В репозитории — исходники и Gradle Wrapper. Установи **JDK 17**, открой терминал в папке проекта и выполни:
+**Готовый мод 1.0.1 для Forge 47.4.0:** [скачать артефакт сборки](https://github.com/Desm00nt/Upgrade/actions/runs/35764091930/artifacts/10711617354). GitHub может попросить войти в аккаунт. Распакуй ZIP — внутри находится `kustik-1.20.1-1.0.1.jar`; в `mods` нужно положить именно JAR, а не ZIP.
+
+[Сборка в Actions завершилась успешно](https://github.com/Desm00nt/Upgrade/actions/runs/35764091930). Проверка `verifyModJar` открывает уже переобфусцированный JAR и проверяет версию мода, требование Forge и наличие нужных классов/промпта.
+
+**Если хочешь собрать самостоятельно:** в репозитории есть исходники и Gradle Wrapper. Установи **JDK 17**, открой терминал в папке проекта и выполни:
 
 **Windows / PowerShell**
 
@@ -56,7 +60,7 @@ build/libs/kustik-1.20.1-1.0.1.jar
 
 **Вариант без локальной сборки:** после отправки изменений в GitHub workflow **Build Kustik** (`.github/workflows/build.yml`) собирает мод и прикладывает его к успешному запуску в **Actions → Artifacts → kustik-minecraft-1.20.1-forge**. Workflow запускается автоматически при push. Он также поддерживает `workflow_dispatch`; кнопка ручного запуска в GitHub доступна после добавления workflow в ветку по умолчанию. API-ключ для сборки не нужен.
 
-Текущий статус проверок и ограничения среды: [docs/VERIFICATION.md](docs/VERIFICATION.md). Само наличие исходников или workflow не означает, что готовый JAR уже собран.
+Результаты CI, контрольная сумма JAR и оставшиеся игровые проверки: [docs/VERIFICATION.md](docs/VERIFICATION.md).
 
 ### 2. Установи мод
 
@@ -192,7 +196,7 @@ $env:ATRIA_API_KEY = "ТВОЙ_КЛЮЧ"
 
 ```bash
 ./gradlew -p core test   # HTTP-клиент, ключи, JSON, память, лимиты и награды; без Minecraft и API-ключа
-./gradlew build          # Полная сборка, core-тесты, NBT/Forge-конфиг-тесты и reobfJar
+./gradlew build          # Тесты, reobfJar и проверка упакованного JAR для Forge 47.4.0
 ./gradlew runClient      # Тестовая игра в папке run/
 ./gradlew runServer      # Тестовый выделенный сервер (нужно самостоятельно принять EULA)
 ```
