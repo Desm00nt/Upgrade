@@ -42,7 +42,10 @@ dependencies {
 tasks.named('processResources', ProcessResources).configure {
     filteringCharset = 'UTF-8'
     inputs.property 'version', project.version
-    filesMatching('META-INF/mods.toml') { expand version: project.version }
+    inputs.property 'forge_version', project.forge_version
+    filesMatching('META-INF/mods.toml') {
+        expand version: project.version, forge_version: project.forge_version
+    }
 }
 
 tasks.named('jar', Jar).configure {

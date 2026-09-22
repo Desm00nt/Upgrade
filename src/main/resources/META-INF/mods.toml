@@ -18,7 +18,7 @@ description='''
 [[dependencies.kustik]]
 modId="forge"
 mandatory=true
-versionRange="[47.4.10,48)"
+versionRange="[${forge_version},48)"
 ordering="NONE"
 side="BOTH"
 
